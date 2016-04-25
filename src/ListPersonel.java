@@ -15,6 +15,7 @@ public class ListPersonel extends JPanel implements ActionListener {
    public ListPersonel() {
       loadStaff();
       initPanel();
+      listStaff();
    }
 
    private void initPanel() {
@@ -27,7 +28,7 @@ public class ListPersonel extends JPanel implements ActionListener {
       jpnlTitle.setBackground( new Color(0,120,130) );
       jpnlTitle.setBorder( BorderFactory.createMatteBorder(0,0,3,0, new Color(0,60,65)) );
 
-      JLabel jlblTitle = new JLabel( "List Stuff" );
+      JLabel jlblTitle = new JLabel( "List Staff" );
       jlblTitle.setForeground( new Color(0,60,65) );
       jpnlTitle.add( jlblTitle );
       this.add( jpnlTitle );
@@ -80,8 +81,8 @@ public class ListPersonel extends JPanel implements ActionListener {
       c.gridwidth = 3;
       c.gridx = 0;
       c.gridy = 1;
-      jpnlOpt.add( jbList, c );
-      this.add( jpnlOpt );
+      //jpnlOpt.add( jbList, c );
+      //this.add( jpnlOpt );
       /* jpnlOpt */
 
       jpnlList.setLayout( new BoxLayout(jpnlList,BoxLayout.Y_AXIS) );
