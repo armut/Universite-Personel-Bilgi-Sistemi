@@ -1,9 +1,16 @@
 /* Add Personnel Window */
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.sql.*;
+import java.io.File;
 
-public class AddPersonel extends JPanel {
-   
+public class AddPersonel extends JPanel implements ActionListener {
+
+   JTextField jtfName, jtfSurname, jtfDepartment, jtfPhoneNumber, jtfEmail;
+   String imgAddr;
+   JLabel jlblStatus;
+
    public AddPersonel() {
       initPanel();
    }
@@ -26,14 +33,14 @@ public class AddPersonel extends JPanel {
       /* jpnlTitle */
 
       /* jpnlInput */
-      JPanel jpnlInput = new JPanel( new GridLayout(0,2) );
+      JPanel jpnlInput = new JPanel( new GridLayout(5,2) );
       jpnlInput.setBackground( new Color(0,120,130) );
 
       JLabel jlblName = new JLabel( "Name: " );
       jlblName.setForeground( Color.white );
       jpnlInput.add( jlblName );
 
-      JTextField jtfName = new JTextField();
+      jtfName = new JTextField();
       jpnlInput.add( jtfName );
 
 
@@ -41,7 +48,7 @@ public class AddPersonel extends JPanel {
       jlblSurname.setForeground( Color.white );
       jpnlInput.add( jlblSurname );
 
-      JTextField jtfSurname = new JTextField();
+      jtfSurname = new JTextField();
       jpnlInput.add( jtfSurname );
 
 
@@ -49,7 +56,7 @@ public class AddPersonel extends JPanel {
       jlblDepartment.setForeground( Color.white );
       jpnlInput.add( jlblDepartment );
 
-      JTextField jtfDepartment = new JTextField();
+      jtfDepartment = new JTextField();
       jpnlInput.add( jtfDepartment );
 
 
@@ -57,7 +64,7 @@ public class AddPersonel extends JPanel {
       jlblPhoneNumber.setForeground( Color.white );
       jpnlInput.add( jlblPhoneNumber );
 
-      JTextField jtfPhoneNumber = new JTextField();
+      jtfPhoneNumber = new JTextField();
       jpnlInput.add( jtfPhoneNumber );
 
 
@@ -65,7 +72,7 @@ public class AddPersonel extends JPanel {
       jlblEmail.setForeground( Color.white );
       jpnlInput.add( jlblEmail );
 
-      JTextField jtfEmail = new JTextField();
+      jtfEmail = new JTextField();
       jpnlInput.add( jtfEmail );
 
       jpnlInput.setBorder( BorderFactory.createMatteBorder(5,0,0,5, new Color(0,120,130)) );
@@ -77,20 +84,72 @@ public class AddPersonel extends JPanel {
       jpnlImg.setLayout( new BoxLayout(jpnlImg,BoxLayout.Y_AXIS) );
       jpnlImg.setBorder( BorderFactory.createMatteBorder(5,0,0,0, new Color(0,120,130)) );
 
-      JLabel jlblImg = new JLabel( "<html>Click<br>here to<br>browse<br>image", JLabel.CENTER );
+      final JLabel jlblImg = new JLabel( "<html>Click<br>here to<br>browse<br>image", JLabel.CENTER );
       jlblImg.setPreferredSize( new Dimension(75,125) );
+      jlblImg.addMouseListener( new MouseAdapter()
+      {
+         public void mouseClicked( MouseEvent e )
+         {
+            JFileChooser fc = new JFileChooser();
+            int result = fc.showOpenDialog( AddPersonel.this );
+
+            if( result == JFileChooser.APPROVE_OPTION ) {
+               File f = fc.getSelectedFile();
+               imgAddr = f.getAbsolutePath();
+               ImageIcon icon = new ImageIcon( imgAddr );
+               jlblImg.setIcon( Sistem.shrinkImage(icon,75,125) );
+
+            }
+         }
+      } );
       jpnlImg.add( jlblImg );
 
-      this.add( jpnlImg, BorderLayout.CENTER );
+      this.add( jpnlImg, BorderLayout.LINE_END );
       /* jpnlImg */
 
+      /* jpnlBottom */
+      JPanel jpnlBottom = new JPanel();
+      jpnlBottom.setLayout( new BorderLayout() );
+      jpnlBottom.setBackground( new Color(0,120,130) );
+
       JButton jbAdd = new JButton( "Add" );
-      this.add( jbAdd, BorderLayout.PAGE_END );
+      jbAdd.addActionListener( this );
+      jpnlBottom.add( jbAdd, BorderLayout.PAGE_START );
 
+      jlblStatus = new JLabel( "Status: " );
+      jpnlBottom.add( jlblStatus, BorderLayout.PAGE_END );
 
-     
+      this.add( jpnlBottom, BorderLayout.PAGE_END );
+      /* jpnlBottom */
+
    }
    
+   public void actionPerformed( ActionEvent e ) {
+
+      Connection c = null;
+      Statement stmt = null;
+      try {
+         Class.forName( "org.sqlite.JDBC" );
+         c = DriverManager.getConnection( "jdbc:sqlite:personnel.db" );
+         c.setAutoCommit( false );
+
+         stmt = c.createStatement();
+         String sql = "INSERT INTO academic (name,surname,phone,email,department,image) " +
+                      "VALUES ('" + jtfName.getText() + "','" + jtfSurname.getText() + "','" + jtfPhoneNumber.getText() + "','" + jtfEmail.getText() + "','" + jtfDepartment.getText() + "','" + imgAddr + "');";
+         stmt.executeUpdate( sql );
+         stmt.close();
+         c.commit();
+         c.close();
+         jlblStatus.setText( "Insertion has been done succesfully" );
+
+      }
+      catch( Exception ex ) {
+         jlblStatus.setText( "Error in insertion operation!" );
+         System.err.println( ex.getClass().getName() + ": " + ex.getMessage() );
+         System.exit( 0 );
+      }
+   }
+
    public void addTo( JPanel jpnlContainer ) {
 
       //clear the container JPanel first.

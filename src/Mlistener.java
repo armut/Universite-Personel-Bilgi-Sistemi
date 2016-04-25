@@ -87,20 +87,24 @@ public class Mlistener implements MouseListener, ActionListener {
    public void actionPerformed( ActionEvent e ) {
       
       if( e.getSource() == jbList ) {
-         Sistem.listPersonel.addTo( AnaPencere.jpnlContent );
-         Sistem.listPersonel.setImg( "res/list.png", AnaPencere.jlblImg );
+         ListPersonel listPersonel = new ListPersonel();
+         listPersonel.addTo( AnaPencere.jpnlContent );
+         listPersonel.setImg( "res/list.png", AnaPencere.jlblImg );
       }
       else if( e.getSource() == jbBrowse ) {
-         Sistem.browsePersonel.addTo( AnaPencere.jpnlContent );
-         Sistem.browsePersonel.setImg( "res/browse.png", AnaPencere.jlblImg );
+         BrowsePersonel browsePersonel = new BrowsePersonel();
+         browsePersonel.addTo( AnaPencere.jpnlContent );
+         browsePersonel.setImg( "res/browse.png", AnaPencere.jlblImg );
       }
       else if( e.getSource() == jbAdd ) {
-         Sistem.addPersonel.addTo( AnaPencere.jpnlContent );
-         Sistem.addPersonel.setImg( "res/add.png", AnaPencere.jlblImg );
+         AddPersonel addPersonel = new AddPersonel();
+         addPersonel.addTo( AnaPencere.jpnlContent );
+         addPersonel.setImg( "res/add.png", AnaPencere.jlblImg );
       }
       else if( e.getSource() == jbDel ) {
-         Sistem.deletePersonel.addTo( AnaPencere.jpnlContent );
-         Sistem.deletePersonel.setImg( "res/delete.png", AnaPencere.jlblImg );
+         DeletePersonel deletePersonel = new DeletePersonel();
+         deletePersonel.addTo( AnaPencere.jpnlContent );
+         deletePersonel.setImg( "res/delete.png", AnaPencere.jlblImg );
       }
       else if( e.getSource() == jbClose ) {
          System.exit( 0 );
