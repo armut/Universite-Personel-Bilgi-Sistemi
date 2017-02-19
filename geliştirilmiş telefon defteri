@@ -1,0 +1,395 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.util.*;
+import java.io.*;
+import javax.swing.filechooser.*;
+
+public class TelefonDefteri extends JPanel implements ActionListener  {
+   
+   private static ResourceBundle kaynak ;
+   private static boolean boyavegit = false ;
+   private  static final Vector<Record> v = new Vector<Record>();
+   private DefaultTableModel model ;
+   private JTable tablo ;
+   private String[] bilgi = new String[11] ;
+   private JButton ekleB , acB , kaydetB , silB , sr1B , sr2B , sr3B , sr4B , sr5B , sr6B ;
+   private JButton[] dugmeler ;
+   private JLabel[] etiketler = new JLabel[6] ;
+   private JFileChooser dosyaSecici = new JFileChooser();
+   private JTextField[] alan = new JTextField[6] ;
+   
+   static {
+      try {
+         kaynak = ResourceBundle.getBundle("TelefonDefteri" , Locale.getDefault());
+         } catch(MissingResourceException mre){
+         System.err.println(mre.getMessage());
+         boyavegit = true ;
+      }
+   }
+   
+   public void paintChildren(Graphics g){
+      super.paintChildren(g);
+      if(boyavegit){
+         System.exit(0);
+      }
+   }
+   
+   public TelefonDefteri(){
+      super(new BorderLayout());
+      model = new DefaultTableModel();
+      String[] kelimeler = new String[]{ "No" , "Name"  ,"Surname" , "Age" , "Location" , "Tel" , "Add" , "Del" , "Open" , "Save" , "Sort" } ;
+      try{
+         for(int i = 0 ; i < bilgi.length ; i++){
+            bilgi[i] = kaynak.getString(kelimeler[i]);
+         }
+         } catch(MissingResourceException mre){
+         TarzYap t = new TarzYap();
+         t.mesaj(mre.getMessage() , "E" , 1);
+         for(int i = 0 ; i < kelimeler.length ; i++){
+            bilgi[i] = kelimeler[i] ;
+         }
+      }
+      for(int i = 0 ; i < etiketler.length ; i++){
+         etiketler[i] = new TarzYap().etiket(bilgi[i] , new Color(222 , 222 , 222) , new Color(22 , 22 , 222));
+      }
+      TarzYap t = new TarzYap();
+      ekleB = t.dugme(bilgi[6] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      ekleB.setToolTipText("ShortCut = ");
+      ekleB.setMnemonic(KeyEvent.VK_INSERT);
+      silB = t.dugme(bilgi[7] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      silB.setToolTipText("Shortcut = ");
+      silB.setMnemonic(KeyEvent.VK_DELETE);
+      acB = t.dugme(bilgi[8] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      acB.setToolTipText("Shortut = ");
+      acB.setMnemonic(KeyEvent.VK_O);
+      kaydetB = t.dugme(bilgi[9] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      kaydetB.setToolTipText("Shortcut = ");
+      kaydetB.setMnemonic(KeyEvent.VK_S);
+      sr1B = t.dugme(bilgi[10] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      sr2B = t.dugme(bilgi[10] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      sr3B = t.dugme(bilgi[10] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      sr4B = t.dugme(bilgi[10] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      sr5B = t.dugme(bilgi[10] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      sr6B = t.dugme(bilgi[10] , Color.LIGHT_GRAY , new Color(22 , 22 , 222)) ;
+      dugmeler = new JButton[]{ ekleB , silB , acB , kaydetB , sr1B , sr2B , sr3B , sr4B , sr5B , sr6B } ;
+      for(int i = 0 ; i < dugmeler.length ; i++){
+         dugmeler[i].addActionListener(this);
+      }
+      for(int i = 0 ; i < 6 ; i++){
+         alan[i] = new JTextField();
+         alan[i].setName("alan" + Integer.toString(i));
+         model.addColumn(bilgi[i]);
+      }
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(2 , 8));
+      JComponent[] comp = new JComponent[]{ etiketler[0] , etiketler[1] , etiketler[2] , etiketler[3] , etiketler[4] , etiketler[5] , ekleB , silB , alan[0] , alan[1] , alan[2] , alan[3] , alan[4] , alan[5] , acB , kaydetB } ;
+      for(int i = 0 ; i < comp.length ; i++){
+         panel.add(comp[i]);
+      }
+      dosyaSecici.setFileHidingEnabled(false);
+      dosyaSecici.addChoosableFileFilter(new TabloFilter());
+      tablo = new JTable(model);
+      tablo.setGridColor(Color.BLUE);
+      tablo.setForeground(Color.GREEN);
+      tablo.setBackground(new Color(50 , 50 , 50));
+      tablo.setFont(new Font("Times New Roman" , Font.BOLD + Font.ITALIC , 18));
+      JScrollPane jsp = new JScrollPane();
+      JViewport port = jsp.getViewport();
+      port.add(tablo);
+      JPanel panel2 = new JPanel();
+      JButton[] siralamalar = new JButton[]{ sr1B , sr2B , sr3B , sr4B  ,sr5B , sr6B } ;
+      panel2.setLayout(new GridLayout(1 , 6));
+      for(int  i = 0 ; i < siralamalar.length ; i++){
+         panel2.add(siralamalar[i]);
+      }
+      add(panel , BorderLayout.NORTH);
+      add(jsp , BorderLayout.CENTER);
+      add(panel2 , BorderLayout.SOUTH);
+   } //constructor sonu
+   
+   //inner class
+   private class TabloFilter extends javax.swing.filechooser.FileFilter {
+      
+      public boolean accept(File f){
+         if(f.isDirectory()){
+            return true ;
+         }
+         if(f.getName().endsWith(".table")){
+            return true ;
+         }
+         return false ;
+      }
+      
+      public String getDescription(){
+         return "*.table files" ;
+      }
+   } //inner sonu
+   
+   //inner
+   private class Kayit extends Object{
+      
+      String s ;
+      
+      Kayit(){
+      }
+      
+      public Kayit(String s){
+         this.s = s ;
+      }
+      
+      public String toString(){
+         return s ;
+      }
+   } //inner sonu
+   
+   //inner
+   private class Rakam extends Object {
+      
+      int i ;
+      
+      Rakam(){
+      }
+      
+      public Rakam(int i){
+         this.i = i ;
+      }
+      
+      public String toString(){
+         return Integer.toString(i);
+      }
+   } //inner sonu
+   
+   //inner class
+   private class Sorting implements Comparator<Record>{
+      
+      int sayi ;
+      
+      Sorting(int sayi){
+         this.sayi = sayi ;
+      }
+      
+      public int compare(Record r1 , Record r2){
+         if(sayi == 1){
+            return Integer.parseInt(r1.str[0].toString()) - Integer.parseInt(r2.str[0].toString()) ;
+            } else if(sayi == 2){
+            return (r1.str[1].toString().toLowerCase()).compareTo(r2.str[1].toString().toLowerCase());
+            } else if(sayi == 3){
+            return (r1.str[2].toString().toLowerCase()).compareTo(r2.str[2].toString().toLowerCase());
+            } else if(sayi == 4){
+            return Integer.parseInt(r1.str[3].toString()) - Integer.parseInt(r2.str[3].toString()) ;
+            } else if(sayi == 5){
+            return (r1.str[4].toString().toLowerCase()).compareTo(r2.str[4].toString().toLowerCase());
+            }  else if(sayi == 6){
+            return Integer.parseInt(r1.str[5].toString()) - Integer.parseInt(r2.str[5].toString()) ;
+         }
+         else
+            return 0 ;
+      }
+   } //inner sonu
+   
+   private void silRow(){
+      int xx = model.getRowCount() -1 ;
+      while(xx >= 0){
+         model.removeRow(xx);
+         xx -= 1 ;
+      }
+   }
+   
+   private Record[] verdizi(){
+      TelefonDefteri.v.removeAllElements();
+      Record rec = null ;
+      for(int i = 0 ; i < model.getRowCount() ; i++){
+         try{
+            rec = new Record(new Object[]{ new Rakam(Integer.parseInt(model.getValueAt(i , 0).toString())) , new Kayit(model.getValueAt(i , 1).toString()) , new Kayit(model.getValueAt(i , 2).toString()) , new Rakam(Integer.parseInt(model.getValueAt(i , 3).toString())) , new Kayit(model.getValueAt(i , 4).toString()) , new Rakam(Integer.parseInt(model.getValueAt(i , 5).toString())) } ) ;
+            TelefonDefteri.v.addElement(rec);
+            } catch(ClassCastException e){
+            new TarzYap().mesaj(e.getMessage() , "ERROR" , 1);
+            System.exit(1);
+            } catch(NullPointerException npe){
+            new TarzYap().mesaj("Sistem kapan\u0131yor.L\u016Btfen bo\u015F h\u016Bcre b\u0131rakmay\u0131\u0131n....." , "HATA" , 1);
+            System.exit(2);
+            } catch(NumberFormatException fe){
+            new TarzYap().mesaj("Sistem kapan\u0131yor.L\u016Btfen bo\u015F h\u016Bcre b\u0131rakmay\u0131\u0131n....." , "HATA" , 1);
+            System.exit(3);
+         }
+         try {
+            Thread.sleep(100);
+            } catch(InterruptedException ie){
+         }
+      }//for
+      Record[] recarray = new Record[model.getRowCount()] ;
+      for(int z = 0 ; z < TelefonDefteri.v.size() ; z++){
+         recarray[z] =  (Record)TelefonDefteri.v.elementAt(z);
+      }
+      return recarray ;
+   }
+   
+   private void ekle(int y){
+      Record[] dizi = verdizi();
+      Sorting sorting = new Sorting(y);
+      Arrays.sort(dizi , sorting);
+      silRow();
+      for(int i = 0 ; i < dizi.length ; i++){
+         model.addRow(dizi[i].str);
+      }
+   }
+   
+   private void boskalmasin(){
+      for(int i = 0 ; i < 6 ; i++){
+         String m = alan[i].getText();
+         if(m.equals("") || m.equals(" ") || m == null){
+            alan[i].setText("XXX");
+         }
+      }
+   }
+   
+   private void sifirla(){
+      for(int i = 0 ; i < 6 ; i++){
+         alan[i].setText("");
+      }
+   }
+   
+   public void actionPerformed(ActionEvent evt){
+      if(evt.getSource() == ekleB){
+         boskalmasin();
+         Record r = null ;
+         try {
+            r = new Record( new Object[]{ new Rakam(Integer.parseInt(alan[0].getText())) , new Kayit(alan[1].getText()) , new Kayit(alan[2].getText()) , new Rakam(Integer.parseInt(alan[3].getText())) , new Kayit(alan[4].getText()) , new Rakam(Integer.parseInt(alan[5].getText())) } ) ;
+            } catch(NumberFormatException nfe){
+            TarzYap t = new TarzYap();
+            t.mesaj(nfe.getMessage() , "E" , 1);
+            return ;
+         }
+         model.addRow(r.str);
+         sifirla();
+         } else if(evt.getSource() == silB){
+         if(model.getRowCount() == 0){
+            return ;
+            } else if(model.getRowCount() == 1){
+            model.removeRow(0);
+            } else {
+            Object[] val = new Object[]{ "Hepsi" , "S\u016Btun No" } ;
+            Object obj = JOptionPane.showInputDialog(null , "Silme metodunu se\u00E7in:" , "Sil" , JOptionPane.YES_NO_CANCEL_OPTION , null , val , val[1]) ;
+            if(obj != null){
+               if(obj.toString().equals("Hepsi")){
+                  silRow();
+                  } else if(obj.toString().equals("S\u016Btun No")){
+                  int num = 0 ;
+                  String x = JOptionPane.showInputDialog(null , "Silinecek s\u016Btun numaras\u0131n\u0131 girin:");
+                  try{
+                     num = Integer.parseInt(x);
+                     } catch(NumberFormatException nfe){
+                     TarzYap t = new TarzYap();
+                     t.mesaj("L\u016Btfen rakam girin." , "E" , 1);
+                     return ;
+                  }
+                  if(num <= 0 || num > model.getRowCount()){
+                     return ;
+                  }
+                  model.removeRow(num - 1);
+                  } else {
+                  return ;
+               }
+               } else {
+               return ;
+            }//else
+         }//ilk else
+      }//else if
+      else if(evt.getSource() == kaydetB){
+         if(model.getRowCount() == 0){
+            return ;
+         }
+         TarzYap t = new TarzYap();
+         int rep = dosyaSecici.showSaveDialog(TelefonDefteri.this);
+         if(rep != JFileChooser.APPROVE_OPTION){
+            return ;
+         }
+         File f = dosyaSecici.getSelectedFile();
+         try {
+            FileWriter fw = new FileWriter(f);
+            int y = model.getColumnCount();
+            fw.write( "No_Ad_Soyad_Ya\u015F_Memleket_Tel");
+            fw.write("\n\n");
+            int r = model.getRowCount();
+            for(int k = 0 ; k < r ; k++){
+               for(int j = 0 ; j < y ; j++){
+                  String col = model.getColumnName(j);
+                  String cc = col + ":" + model.getValueAt(k , j).toString();
+                  fw.write(cc + "\n");
+               }
+               fw.write("\n");
+            }
+            fw.close();
+            } catch(IOException ioe){
+            t.mesaj(ioe.getMessage() , "E" , 1);
+            return ;
+         }
+         } else if(evt.getSource() == acB){
+         TarzYap t = new TarzYap();
+         DefaultTableModel modelim = null ;
+         int rep = dosyaSecici.showOpenDialog(TelefonDefteri.this);
+         if(rep != JFileChooser.APPROVE_OPTION){
+            return ;
+         }
+         File f = dosyaSecici.getSelectedFile();
+         JTextArea txt = new JTextArea(15 , 15);
+         JScrollPane jp = new JScrollPane(txt);
+         txt.setFont(new Font("Verdana" , Font.BOLD ,14));
+         txt.setForeground(Color.BLUE);
+         String line = "" ;
+         try {
+            BufferedReader buf = new BufferedReader(new FileReader(f));
+            while( (line = buf.readLine()) != null ){
+               txt.append(line + "\n");
+            }
+            buf.close();
+            } catch(IOException ioe){
+            t.mesaj(ioe.getMessage() , "E" , 1);
+            return ;
+         }
+         JOptionPane.showMessageDialog(null , jp);
+         } else if(evt.getSource() == sr1B){
+         ekle(1) ;
+         }  else if(evt.getSource() == sr2B){
+         ekle(2);
+         }  else if(evt.getSource() == sr3B){
+         ekle(3);
+         }  else if(evt.getSource() == sr4B){
+         ekle(4);
+         }  else if(evt.getSource() == sr5B){
+         ekle(5);
+         }  else {
+         ekle(6);
+      }
+   } //action sonu
+   
+   public static void ekran(){
+      JFrame.setDefaultLookAndFeelDecorated(true);
+      JDialog.setDefaultLookAndFeelDecorated(true);
+      JFrame fr = new JFrame("Telefon Defteri");
+      fr.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent evt){
+               v.removeAllElements();
+               System.gc();
+               System.exit(0);
+            }
+      } );
+      JComponent jc = new TelefonDefteri();
+      jc.setOpaque(true);
+      fr.setContentPane(jc);
+      fr.pack();
+      fr.setSize(600 , 500);
+      fr.setLocationRelativeTo(null);
+      fr.setVisible(true);
+   }
+   
+   public static void main(String[] args){
+      javax.swing.SwingUtilities.invokeLater(new Runnable(){
+            public void run(){
+               ekran();
+            }
+      } ) ;
+   }
+} //ANA CLASS SONU
